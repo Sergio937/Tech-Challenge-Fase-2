@@ -1,0 +1,35 @@
+services:
+  flag-postgres:
+    image: postgres:15
+    container_name: flag-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: flagsdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - flag_data:/var/lib/postgresql/data
+    networks:
+      - flagnet
+
+  flag-service:
+    build: .
+    container_name: flag-service
+    depends_on:
+      - flag-postgres
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@flag-postgres:5432/flagsdb
+      AUTH_SERVICE_URL: http://localhost:9001  # mock ou ajuste conforme teste
+      PORT: 8002
+    ports:
+      - "8002:8002"
+    networks:
+      - flagnet
+
+networks:
+  flagnet:
+
+volumes:
+  flag_data:

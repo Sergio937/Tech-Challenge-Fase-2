@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: togglemaster
+spec:
+  selector:
+    matchLabels:
+      app: analytics-service
+  template:
+    metadata:
+      labels:
+        app: analytics-service
+    spec:
+      containers:
+        - name: analytics-service
+          image: marcelosilva404/analytics-service:1.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+
+          envFrom:
+            - secretRef:
+                name: analytics-app-secret
+
+          ports:
+            - containerPort: 8005
+
+          livenessProbe: 
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          readinessProbe: 
+            httpGet:
+              path: /health
+              port: 8005
+            initialDelaySeconds: 5
+            periodSeconds: 5

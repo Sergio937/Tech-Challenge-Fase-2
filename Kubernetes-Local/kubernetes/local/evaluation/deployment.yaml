@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: evaluation-service
+  namespace: togglemaster
+spec:
+  selector:
+    matchLabels:
+      app: evaluation-service
+  template:
+    metadata:
+      labels:
+        app: evaluation-service
+    spec:
+      containers:
+        - name: evaluation-service
+          image: marcelosilva404/evaluation-service:1.0
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+
+          envFrom:
+            - secretRef:
+                name: evaluation-app-secret
+
+          env:
+            - name: SERVICE_API_KEY
+              value: tm_key_5964e2745dd8ad52d13b2678a001a113dafb9a23ae1b5d5fee92679337df95fe
+
+          ports:
+            - containerPort: 8004
+
+          livenessProbe: 
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          readinessProbe: 
+            httpGet:
+              path: /health
+              port: 8004
+            initialDelaySeconds: 5
+            periodSeconds: 5

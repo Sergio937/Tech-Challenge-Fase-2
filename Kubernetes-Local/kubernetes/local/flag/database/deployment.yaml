@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flag-postgres
+  namespace: togglemaster
+spec:
+  selector:
+    matchLabels:
+      app: flag-postgres
+  template:
+    metadata:
+      labels:
+        app: flag-postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15
+          env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: auth-flag-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: auth-flag-secret
+                key: POSTGRES_PASSWORD
+          - name: POSTGRES_DB
+            valueFrom:
+              secretKeyRef:
+                name: auth-flag-secret
+                key: POSTGRES_DB
+          volumeMounts:
+            - name: flag-data
+              mountPath: /var/lib/postgresql/data
+            - name: init-sql
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+      volumes:
+        - name: flag-data
+          persistentVolumeClaim:
+            claimName: flag-db-pvc
+        - name: init-sql
+          configMap:
+            name: flag-db-init

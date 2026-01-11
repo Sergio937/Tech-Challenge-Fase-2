@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-ingress
+  namespace: togglemaster
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: meuaplicativo.local
+      http:
+        paths:
+        # ANALYTICS SERVICE
+        - path: /analytics
+          pathType: Prefix
+          backend:
+            service:
+              name: analytics-service
+              port:
+                number: 8005
+
+        # AUTH SERVICE
+        - path: /admin
+          pathType: Prefix
+          backend:
+            service:
+              name: auth-service
+              port:
+                number: 8001
+
+        # AUTH SERVICE
+        - path: /validate
+          pathType: Prefix
+          backend:
+            service:
+              name: auth-service
+              port:
+                number: 8001
+
+        # EVALUATION SERVICE
+        - path: /evaluate
+          pathType: Prefix
+          backend:
+            service:
+              name: evaluation-service
+              port:
+                number: 8004
+
+        # FLAG SERVICE
+        - path: /flags
+          pathType: Prefix
+          backend:
+            service:
+              name: flag-service
+              port:
+                number: 8002
+
+        # TARGETING SERVICE
+        - path: /rules
+          pathType: Prefix
+          backend:
+            service:
+              name: targeting-service
+              port:
+                number: 8003

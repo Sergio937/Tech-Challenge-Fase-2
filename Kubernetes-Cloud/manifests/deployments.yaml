@@ -1,0 +1,7 @@
+#!/usr/bin/env pwsh
+# Script PowerShell para aplicar todos os deployments das pastas de serviços
+kubectl apply -f ../analytics-service/
+kubectl apply -f ../targeting-service/
+kubectl apply -f ../evaluation-service/
+kubectl apply -f ../auth-service/
+kubectl apply -f ../flag-service/

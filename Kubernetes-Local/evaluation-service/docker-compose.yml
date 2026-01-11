@@ -1,0 +1,35 @@
+services:
+  localstackdois:
+    image: localstack/localstack:3.0
+    container_name: localstackdois
+    environment:
+      SERVICES: dynamodb,sqs
+      AWS_DEFAULT_REGION: us-east-1
+    ports:
+      - "4567:4566"
+    volumes:
+      - "./localstack:/var/lib/localstack"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  evaluation-service:
+    build: .
+    container_name: evaluation-service
+    depends_on:
+      - redis
+      - localstackdois
+    environment:
+      PORT: 8004
+      REDIS_URL: redis://redis:6379
+      FLAG_SERVICE_URL: http://host.docker.internal:8001
+      TARGETING_SERVICE_URL: http://host.docker.internal:8002
+      AWS_REGION: us-east-1
+      AWS_SQS_URL: http://localstackdois:4566/000000000000/evaluation-events
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+    ports:
+      - "8004:8004"

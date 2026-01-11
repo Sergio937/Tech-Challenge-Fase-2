@@ -1,0 +1,29 @@
+services:
+  targeting-db:
+    image: postgres:15
+    container_name: targeting-db
+    restart: always
+    environment:
+      POSTGRES_USER: targeting
+      POSTGRES_PASSWORD: targeting
+      POSTGRES_DB: targeting
+    ports:
+      - "5436:5432"
+    volumes:
+      - targeting_data:/var/lib/postgresql/data
+
+  targeting-service:
+    build: .
+    container_name: targeting-service
+    restart: always
+    depends_on:
+      - targeting-db
+    environment:
+      PORT: 8003
+      DATABASE_URL: postgres://targeting:targeting@targeting-db:5432/targeting
+      AUTH_SERVICE_URL: http://auth-service:8001
+    ports:
+      - "8003:8003"
+
+volumes:
+  targeting_data:

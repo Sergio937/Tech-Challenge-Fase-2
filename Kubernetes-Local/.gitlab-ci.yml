@@ -1,0 +1,62 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+
+stages:
+  - build
+
+.before_docker:
+  before_script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+
+# =============================
+# TEMPLATE PARA SERVICES
+# =============================
+
+.build_and_maybe_push:
+  extends: .before_docker
+  stage: build
+  script:
+    - docker build -t marcelosilva404/$SERVICE_NAME:1.0 ./$SERVICE_NAME
+    # Se branch == main → push
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
+        docker push marcelosilva404/$SERVICE_NAME:1.0
+      else
+        echo "Branch '$CI_COMMIT_BRANCH' → apenas build, sem push."
+      fi
+
+# =============================
+# JOBS DE SERVIÇOS
+# =============================
+
+build_auth:
+  variables:
+    SERVICE_NAME: "auth-service"
+  extends: .build_and_maybe_push
+
+build_flag:
+  variables:
+    SERVICE_NAME: "flag-service"
+  extends: .build_and_maybe_push
+
+build_targeting:
+  variables:
+    SERVICE_NAME: "targeting-service"
+  extends: .build_and_maybe_push
+
+build_evaluation:
+  variables:
+    SERVICE_NAME: "evaluation-service"
+  extends: .build_and_maybe_push
+
+build_analytics:
+  variables:
+    SERVICE_NAME: "analytics-service"
+  extends: .build_and_maybe_push

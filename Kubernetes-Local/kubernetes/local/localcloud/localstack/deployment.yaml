@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localstack
+  namespace: togglemaster
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localstack
+  template:
+    metadata:
+      labels:
+        app: localstack
+    spec:
+      containers:
+        - name: localstack
+          image: localstack/localstack:3.0
+          
+          envFrom:
+            - secretRef:
+                name: localstack-app-secret
+
+          volumeMounts:
+            - name: localstack-data
+              mountPath: /var/lib/localstack
+            - name: init-script
+              mountPath: /etc/localstack/init/ready.d/localstack-init.sh
+              subPath: localstack-init.sh
+
+      volumes:
+        - name: localstack-data
+          persistentVolumeClaim:
+            claimName: localstack-pvc
+        - name: init-script
+          configMap:
+            name: localstack-init
+            defaultMode: 0755
